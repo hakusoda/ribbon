@@ -1,21 +1,24 @@
 use dashmap::{
 	mapref::one::Ref,
-	DashMap
+	DashMap, DashSet
 };
 use twilight_model::id::{
-	marker::{ ChannelMarker, GuildMarker, RoleMarker, UserMarker },
+	marker::{ ChannelMarker, EmojiMarker, GuildMarker, RoleMarker, UserMarker },
 	Id
 };	
 use ribbon_models::discord::{
 	guild::{ MemberModel, RoleModel },
-	ChannelModel, GuildModel
+	ChannelModel, EmojiModel, GuildModel
 };
 
 use crate::Result;
 
 #[derive(Default)]
 pub struct DiscordCache {
+	pub application_emojis: DashSet<Id<EmojiMarker>>,
 	pub channels: DashMap<Id<ChannelMarker>, ChannelModel>,
+	pub emojis: DashMap<Id<EmojiMarker>, EmojiModel>,
+	pub emojis_mapped: DashMap<String, Id<EmojiMarker>>,
 	pub guilds: DashMap<Id<GuildMarker>, GuildModel>,
 	pub members: DashMap<(Id<GuildMarker>, Id<UserMarker>), MemberModel>,
 	pub private_channels: DashMap<Id<UserMarker>, Id<ChannelMarker>>,
@@ -34,6 +37,18 @@ impl DiscordCache {
 					.downgrade()
 			}
 		})
+	}
+
+	pub fn emoji(&self, emoji_id: Id<EmojiMarker>) -> Option<Ref<'_, Id<EmojiMarker>, EmojiModel>> {
+		self.emojis.get(&emoji_id)
+	}
+
+	pub fn emoji_mapped(&self, emoji_name: &str) -> Option<Id<EmojiMarker>> {
+		self
+			.emojis_mapped
+			.get(emoji_name)
+			.as_deref()
+			.copied()
 	}
 
 	pub async fn guild(&self, guild_id: Id<GuildMarker>) -> Result<Ref<'_, Id<GuildMarker>, GuildModel>> {

@@ -5,6 +5,8 @@ use crate::Result;
 
 pub mod guild;
 pub mod interaction;
+pub mod member;
+pub mod misc;
 
 pub fn handle_event(event: Event) {
 	let event_kind = event.kind();
@@ -15,6 +17,10 @@ pub fn handle_event(event: Event) {
 		Event::GuildUpdate(x) => guild::guild_update(*x),
 		Event::GuildDelete(x) => guild::guild_delete(x),
 		Event::InteractionCreate(x) => spawn(interaction::interaction_create(*x)),
+		Event::MemberAdd(x) => spawn(member::member_add(*x)),
+		Event::MemberUpdate(x) => spawn(member::member_update(*x)),
+		Event::MemberRemove(x) => spawn(member::member_remove(x)),
+		Event::Ready(x) => spawn(misc::ready(*x)),
 		_ => Ok(())
 	} {
 		println!("error occurred in event handler! {error}");

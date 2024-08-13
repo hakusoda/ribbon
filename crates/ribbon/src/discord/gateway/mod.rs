@@ -12,7 +12,8 @@ pub fn initialise() -> MessageSender {
 
 	let config = ConfigBuilder::new(
 		env!("DISCORD_BOT_TOKEN").to_string(),
-			Intents::GUILDS
+			Intents::GUILDS |
+			Intents::GUILD_MEMBERS
 	)
 		.presence(UpdatePresencePayload::new(vec![Activity {
 			id: None,

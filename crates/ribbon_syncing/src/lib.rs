@@ -1,6 +1,7 @@
 #![feature(let_chains, type_alias_impl_trait)]
 use dashmap::DashSet;
 use ribbon_cache::CACHE;
+use ribbon_emojis::Emoji;
 use ribbon_models::{
 	discord::InteractionRef,
 	ribbon::member_link::{
@@ -8,16 +9,13 @@ use ribbon_models::{
 		criteria::CriteriaItem
 	}
 };
-use ribbon_util::{
-	emoji::{ EMOJI_ARROW_CLOCKWISE, EMOJI_ICON_DISCORD, EMOJI_ICON_ROBLOX },
-	DISCORD_CLIENT, DISCORD_INTERACTION_CLIENT, WEBSITE_URL
-};
-use std::fmt::Display;
+use ribbon_util::{ DISCORD_CLIENT, DISCORD_INTERACTION_CLIENT, WEBSITE_URL };
+use std::fmt::{ Display, Formatter };
 use twilight_http::request::AuditLogReason;
 use twilight_model::{
 	channel::message::{
 		component::{ ActionRow, Button, ButtonStyle },
-		MessageFlags, ReactionType
+		MessageFlags
 	},
 	http::interaction::{ InteractionResponse, InteractionResponseData, InteractionResponseType },
 	id::{
@@ -60,10 +58,12 @@ impl SyncOperation {
 			.await?;
 		let Some(link_id) = link_ids.into_iter().next() else {
 			if let Some((interaction,_)) = self.interaction {
-				let request = CACHE
-					.ribbon
-					.create_authorise_request(interaction.clone());
-				let callback_url = format!("{WEBSITE_URL}/roblox_request/{}", request.key());
+				let callback_url = {
+					let request = CACHE
+						.ribbon
+						.create_authorise_request(interaction.clone());
+					format!("{WEBSITE_URL}/roblox_request/{}", request.key())
+				};
 				DISCORD_INTERACTION_CLIENT
 					.create_response(interaction.id, &interaction.token, &InteractionResponse {
 						kind: InteractionResponseType::ChannelMessageWithSource,
@@ -72,17 +72,28 @@ impl SyncOperation {
 								components: vec![Button {
 									custom_id: None,
 									disabled: false,
-									emoji: Some(ReactionType::Custom {
-										animated: false,
-										id: EMOJI_ICON_ROBLOX,
-										name: None
-									}),
+									emoji: Some(Emoji::IconRoblox.into()),
 									label: Some("Connect Roblox Account".into()),
 									style: ButtonStyle::Link,
 									url: Some(callback_url)
 								}.into()]
 							}.into()]),
-							content: Some("you don't have a roblox account connected!!!!!\nAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH!!!!!!!!!!!".to_string()),
+							content: Some({
+								let guild = CACHE
+									.discord
+									.guild(guild_id)
+									.await?;
+								format!(
+									"
+									## {}{}  Ribbon welcomes you to {}!\n\
+									This server uses Ribbon to sync member profiles (roles, etc.) with the Roblox Platform.\n\
+									Since you're new to Ribbon, you'll need to connect a Roblox Account to continue. Don't fret—it's quick, easy, and secure!
+									",
+									Emoji::HandWaving,
+									Emoji::IconRibbon,
+									guild.name
+								)
+							}),
 							flags: Some(MessageFlags::EPHEMERAL),
 							..Default::default()
 						})
@@ -120,9 +131,11 @@ impl SyncOperation {
 		let mut role_changes: Vec<RoleChange> = Vec::new();
 		for member_link_id in member_link_ids {
 			if let Some(member_link) = CACHE.ribbon.member_link(member_link_id) {
-				println!("{}", member_link.display_name);
+				let criteria_items = member_link.criteria.items.clone();
+				drop(member_link);
+
 				let mut is_criteria_met = true;
-				for item in &member_link.criteria.items {
+				for item in criteria_items {
 					let is_item_met = match item {
 						CriteriaItem::GroupMembership { group_id } => {
 							let group_ids = CACHE
@@ -132,7 +145,7 @@ impl SyncOperation {
 
 							group_ids
 								.iter()
-								.any(|x| x == group_id)
+								.any(|x| x == &group_id)
 						},
 						CriteriaItem::GroupMembershipRole { group_id, role_id } => {
 							CACHE
@@ -142,8 +155,8 @@ impl SyncOperation {
 							
 							CACHE
 								.roblox
-								.membership(*group_id, roblox_id)
-								.is_some_and(|x| &x.role_id() == role_id)
+								.membership(group_id, roblox_id)
+								.is_some_and(|x| x.role_id() == role_id)
 						},
 						CriteriaItem::ValidAccount => true
 					};
@@ -153,35 +166,40 @@ impl SyncOperation {
 					}
 				}
 
-				for connector in &member_link.connectors.items {
-					match connector {
-						Connector::Roles { target_role_ids } => RoleChange::extend_with_many(
-							&mut role_changes,
-							if is_criteria_met { RoleChangeKind::Assign } else { RoleChangeKind::Remove },
-							target_role_ids
-						),
-						_ => unimplemented!()
+				if let Some(member_link) = CACHE.ribbon.member_link(member_link_id) {
+					for connector in &member_link.connectors.items {
+						match connector {
+							Connector::Roles { target_role_ids } => RoleChange::extend_with_many(
+								&mut role_changes,
+								if is_criteria_met { RoleChangeKind::Assign } else { RoleChangeKind::Remove },
+								target_role_ids
+							),
+							_ => unimplemented!()
+						}
 					}
 				}
 			}
 		}
-		println!("{role_changes:#?}");
 
-		if !role_changes.is_empty() {
-			let member = CACHE
-				.discord
-				.member(guild_id, user_id)
-				.await?;
-			if let Some(new_roles) = RoleChange::apply_changes(&role_changes, &member.roles) {
+		let roles_changed = if !role_changes.is_empty() {
+			let new_roles = {
+				let member = CACHE
+					.discord
+					.member(guild_id, user_id)
+					.await?;
+				RoleChange::apply_changes(&mut role_changes, &member.roles)
+			};
+			if let Some(new_roles) = new_roles {
 				DISCORD_CLIENT
 					.update_guild_member(guild_id, user_id)
 					.reason("sync operation")
 					.roles(&new_roles)
 					.await?;
-			}
-		}
+				true
+			} else { false }
+		} else { false };
 
-		let profile_changed = !role_changes.is_empty();
+		let profile_changed = roles_changed;
 		let operation_result = SyncOperationResult::Success {
 			profile_changed,
 			role_changes
@@ -196,11 +214,7 @@ impl SyncOperation {
 						Button {
 							custom_id: Some("sync_again".into()),
 							disabled: false,
-							emoji: Some(ReactionType::Custom {
-								animated: false,
-								id: EMOJI_ARROW_CLOCKWISE,
-								name: None
-							}),
+							emoji: Some(Emoji::ArrowClockwise.into()),
 							label: Some("Sync Again".into()),
 							style: ButtonStyle::Primary,
 							url: None
@@ -208,11 +222,7 @@ impl SyncOperation {
 						Button {
 							custom_id: None,
 							disabled: false,
-							emoji: Some(ReactionType::Custom {
-								animated: false,
-								id: EMOJI_ICON_DISCORD,
-								name: None
-							}),
+							emoji: Some(Emoji::IconDiscord.into()),
 							label: Some("Get Support".into()),
 							style: ButtonStyle::Link,
 							url: Some("https://discord.com/invite/rs3r4dQu9P".into())
@@ -223,6 +233,17 @@ impl SyncOperation {
 		}
 
 		Ok(operation_result)
+	}
+}
+
+pub type SyncOperationFuture = impl Future<Output = Result<SyncOperationResult>>;
+
+impl IntoFuture for SyncOperation {
+	type IntoFuture = SyncOperationFuture;
+	type Output = Result<SyncOperationResult>;
+
+	fn into_future(self) -> Self::IntoFuture {
+		self.execute()
 	}
 }
 
@@ -253,46 +274,41 @@ impl RoleChange {
 		matches!(self.kind, RoleChangeKind::Remove)
 	}
 
-	pub fn format(&self) -> String {
+	pub fn apply_changes(role_changes: &mut Vec<RoleChange>, roles: &[Id<RoleMarker>]) -> Option<Vec<Id<RoleMarker>>> {
+		let new_roles: DashSet<_> = roles
+			.iter()
+			.copied()
+			.collect();
+		role_changes
+			.retain(|role_change| match role_change.kind {
+				RoleChangeKind::Assign => new_roles
+					.insert(role_change.role_id),
+				RoleChangeKind::Remove => new_roles
+					.remove(&role_change.role_id)
+					.is_some()
+			});
+		
+		if role_changes.is_empty() { None } else {
+			Some(new_roles
+				.into_iter()
+				.collect()
+			)
+		}
+	}
+}
+
+impl Display for RoleChange {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		let role = CACHE
 			.discord
 			.role(self.role_id);
 		let role_name = role
 			.as_ref()
 			.map_or("", |x| &x.name);
-		format!("{} {role_name}", match self.kind {
+		write!(f, "{} {role_name}", match self.kind {
 			RoleChangeKind::Assign => "+",
 			RoleChangeKind::Remove => "-"
 		})
-	}
-
-	pub fn apply_changes(role_changes: &[RoleChange], roles: &[Id<RoleMarker>]) -> Option<Vec<Id<RoleMarker>>> {
-		let removed_roles: Vec<_> = role_changes
-			.iter()
-			.filter_map(|x| match x.is_remove() {
-				true => Some(x.role_id),
-				false => None
-			})
-			.collect();
-		let new_roles: DashSet<_> = roles
-			.iter()
-			.filter(|x| !removed_roles.contains(x))
-			.copied()
-			.collect();
-		let mut added_role = false;
-		for role_change in role_changes {
-			if role_change.is_assign() {
-				new_roles.insert(role_change.role_id);
-				added_role = true;
-			}
-		}
-
-		if removed_roles.is_empty() && !added_role { None } else {
-			Some(new_roles
-				.into_iter()
-				.collect()
-			)
-		}
 	}
 }
 
@@ -311,35 +327,29 @@ pub enum SyncOperationResult {
 }
 
 impl Display for SyncOperationResult {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Self::Success { profile_changed, role_changes } => if *profile_changed {
-				writeln!(f, "## <:person_fill_check:1269956304143913011>  Server profile updated!")?;
+				writeln!(f, "## {}  Server profile updated!", Emoji::PersonFillCheck)?;
 				if role_changes.is_empty() {
 					write!(f, "uhhhh")
 				} else {
-					write!(f, "Your roleset has been updated, see changes below.\n```diff\n{}```", role_changes
-						.iter()
-						.map(RoleChange::format)
-						.collect::<Vec<_>>()
-						.join("\n")
-					)
+					writeln!(f, "Your roleset has been updated, see changes below.\n```diff")?;
+					for role_change in role_changes {
+						writeln!(f, "{role_change}")?;
+					}
+					write!(f, "```")
 				}
 			} else {
-				write!(f, "## profile did NOT change")
+				write!(f,
+					"
+					## {}  Server profile already up to par!\n\
+					Your profile seems up-to-date, nothing needs changing at this time!
+					",
+					Emoji::PersonFillExclamation
+				)
 			},
 			Self::Cancelled => write!(f, "cancelled")
 		}
-	}
-}
-
-pub type SyncOperationFuture = impl Future<Output = Result<SyncOperationResult>>;
-
-impl IntoFuture for SyncOperation {
-	type IntoFuture = SyncOperationFuture;
-	type Output = Result<SyncOperationResult>;
-
-	fn into_future(self) -> Self::IntoFuture {
-		self.execute()
 	}
 }

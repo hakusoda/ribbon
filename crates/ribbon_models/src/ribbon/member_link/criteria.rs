@@ -5,7 +5,7 @@ pub struct CriteriaModel {
 	pub items: Vec<CriteriaItem>
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum CriteriaItem {
 	GroupMembership {

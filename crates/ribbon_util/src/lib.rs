@@ -5,8 +5,6 @@ use sqlx::PgPool;
 use twilight_http::{ client::InteractionClient, Client };
 use twilight_model::id::{ marker::ApplicationMarker, Id };
 
-pub mod emoji;
-
 pub mod fetch;
 pub use fetch::*;
 

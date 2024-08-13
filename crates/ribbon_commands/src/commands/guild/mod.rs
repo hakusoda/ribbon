@@ -14,7 +14,7 @@ pub async fn sync(context: Context) -> Result<()> {
 		.await
 		.map_err(|x| {
 			println!("{x}");
-			Error::Unknown
+			Error::Unknown // temporary because fiofdasfosajfdlaefe.fqlergiqpteqw[twqkewqt]
 		})?;
 
 	Ok(())

@@ -22,4 +22,4 @@ serde_json.workspace = true
 sqlx.workspace = true
 twilight-http.workspace = true
 twilight-model.workspace = true
-urlencoding = "2.1.3"
+urlencoding.workspace = true

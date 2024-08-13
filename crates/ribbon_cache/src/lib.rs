@@ -1,3 +1,4 @@
+#![feature(let_chains)]
 use once_cell::sync::Lazy;
 
 use discord::DiscordCache;

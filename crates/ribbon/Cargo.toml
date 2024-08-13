@@ -21,6 +21,7 @@ log.workspace = true
 ribbon_cache.path = "../ribbon_cache"
 ribbon_commands.path = "../ribbon_commands"
 ribbon_commands_core.path = "../ribbon_commands_core"
+ribbon_emojis.path = "../ribbon_emojis"
 ribbon_frontend.path = "../ribbon_frontend"
 ribbon_models.path = "../ribbon_models"
 ribbon_syncing.path = "../ribbon_syncing"
