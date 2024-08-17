@@ -1,9 +1,6 @@
-use chrono::{ Utc, DateTime };
 use ribbon_commands_core::{ Context, Interaction };
 use ribbon_syncing::SyncOperation;
 use ribbon_util::DISCORD_INTERACTION_CLIENT;
-use serde::{ Serialize, Deserialize };
-use serde_repr::*;
 use twilight_model::{
 	application::interaction::{
 		application_command::CommandOptionValue,
@@ -13,45 +10,6 @@ use twilight_model::{
 };
 
 use crate::Result;
-
-#[derive(Deserialize_repr, Debug)]
-#[repr(u8)]
-pub enum ApplicationCommandKind {
-	ChatInput = 1,
-	User,
-	Message
-}
-
-#[derive(Clone, Default, Serialize, Deserialize)]
-pub struct Embed {
-	pub url: Option<String>,
-	pub title: Option<String>,
-	pub author: Option<EmbedAuthor>,
-	pub fields: Option<Vec<EmbedField>>,
-	pub footer: Option<EmbedFooter>,
-	pub timestamp: Option<DateTime<Utc>>,
-	pub description: Option<String>
-}
-
-#[derive(Clone, Default, Serialize, Deserialize)]
-pub struct EmbedAuthor {
-	pub url: Option<String>,
-	pub name: Option<String>,
-	pub icon_url: Option<String>
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct EmbedField {
-	pub name: String,
-	pub value: String,
-	pub inline: Option<bool>
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct EmbedFooter {
-	pub text: String,
-	pub icon_url: Option<String>
-}
 
 async fn parse_interaction(context: Context) -> Result<()> {
 	if let Some((context, command)) = ribbon_commands::commands::process_context(context) {
