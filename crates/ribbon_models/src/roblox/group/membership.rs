@@ -1,4 +1,3 @@
-use chrono::{ DateTime, Utc };
 use ribbon_util::{ ROBLOX_OPEN_CLOUD_KEY, get_json };
 use serde::Deserialize;
 
@@ -15,13 +14,6 @@ pub struct GroupMemberships {
 #[derive(Deserialize)]
 pub struct MembershipModel {
 	path: String,
-	#[serde(default, skip)]
-	added_at: DateTime<Utc>,
-	#[serde(rename = "createTime")]
-	created_at: DateTime<Utc>,
-	#[serde(rename = "updateTime")]
-	updated_at: DateTime<Utc>,
-	user: String,
 	role: String
 }
 
