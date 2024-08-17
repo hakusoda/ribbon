@@ -2,6 +2,7 @@ use async_once_cell::Lazy;
 use ribbon_util::DISCORD_INTERACTION_CLIENT;
 use twilight_model::application::command::Command;
 
+pub mod command;
 pub mod gateway;
 pub mod interactions;
 
