@@ -105,12 +105,12 @@ impl SyncOperation {
 			}
 		};
 
-		let account = CACHE
+		let roblox_id = CACHE
 			.ribbon
 			.roblox_account(link_id)
-			.await?;
+			.await?
+			.roblox_id;
 		
-		let roblox_id = account.roblox_id;
 		if let Some((interaction, acknowledged)) = &self.interaction && !acknowledged {
 			DISCORD_INTERACTION_CLIENT
 				.create_response(interaction.id, &interaction.token, &InteractionResponse {
