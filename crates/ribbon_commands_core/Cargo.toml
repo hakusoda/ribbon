@@ -14,6 +14,7 @@ rust-version.workspace = true
 
 [dependencies]
 async-trait = "0.1.81"
+futures.workspace = true
 
 ribbon_cache.path = "../ribbon_cache"
 ribbon_commands_core_macros.path = "../ribbon_commands_core_macros"

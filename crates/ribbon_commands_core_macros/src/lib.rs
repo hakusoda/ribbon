@@ -1,32 +1,34 @@
-use syn::spanned::Spanned;
-use quote::format_ident;
-use darling::FromMeta;
+use darling::{ ast::NestedMeta, FromMeta };
 use proc_macro::TokenStream;
+use quote::{ ToTokens, format_ident, quote };
+use syn::{ spanned::Spanned, Expr, FnArg, ItemFn, Pat, Path, parse_quote };
 
+use list::List;
+
+mod list;
 mod util;
-use util::List;
 
 #[derive(Debug, Default, FromMeta)]
 #[darling(default)]
 struct CommandArgs {
-	user: bool,
-	slash: bool,
-	rename: Option<String>,
-	message: bool,
-	#[darling(rename = "context", multiple)]
+	#[darling(multiple, rename = "context")]
 	contexts: Vec<String>,
+	default_member_permissions: Option<u64>,
 	description: Option<String>,
-	subcommands: List<syn::Path>,
-	default_member_permissions: Option<u64>
+	message: bool,
+	rename: Option<String>,
+	subcommands: List<Path>,
+	slash: bool,
+	user: bool,
 }
 
-#[derive(Default, Debug, darling::FromMeta)]
+#[derive(Default, Debug, FromMeta)]
 #[darling(default)]
 struct ParamArgs {
-	rename: Option<String>,
+	autocomplete: Option<Path>,
+	channel_kinds: Option<List<String>>,
 	description: String,
-	autocomplete: Option<syn::Path>,
-	channel_kinds: Option<List<String>>
+	rename: Option<String>
 }
 
 struct CommandOption {
@@ -35,23 +37,23 @@ struct CommandOption {
 	blah: proc_macro2::TokenStream
 }
 
-fn wrap_option_to_string<T: quote::ToTokens>(literal: Option<T>) -> syn::Expr {
+fn wrap_option_to_string<T: ToTokens>(literal: Option<T>) -> Expr {
 	match literal {
-		Some(literal) => syn::parse_quote! { Some(#literal.to_string()) },
-		None => syn::parse_quote! { None },
+		Some(literal) => parse_quote! { Some(#literal.to_string()) },
+		None => parse_quote! { None },
 	}
 }
 
-fn wrap_option<T: quote::ToTokens>(literal: Option<T>) -> syn::Expr {
+fn wrap_option<T: ToTokens>(literal: Option<T>) -> Expr {
 	match literal {
-		Some(literal) => syn::parse_quote! { Some(#literal) },
-		None => syn::parse_quote! { None },
+		Some(literal) => parse_quote! { Some(#literal) },
+		None => parse_quote! { None },
 	}
 }
 
-fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenStream, darling::Error> {
-	let args = darling::ast::NestedMeta::parse_meta_list(args.into())?;
-	let args = <CommandArgs as darling::FromMeta>::from_list(&args)?;
+fn create_command(args: TokenStream, mut function: ItemFn) -> Result<TokenStream, darling::Error> {
+	let args = NestedMeta::parse_meta_list(args.into())?;
+	let args = <CommandArgs as FromMeta>::from_list(&args)?;
 	if !args.user && !args.slash && !args.message {
 		return Err(syn::Error::new(function.sig.span(), "command must specify either user, slash, or message").into());
 	}
@@ -63,14 +65,14 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 		.trim_start_matches("r#")
 		.to_string();
 
-	let function_ident = std::mem::replace(&mut function.sig.ident, syn::parse_quote! { inner });
+	let function_ident = std::mem::replace(&mut function.sig.ident, parse_quote! { inner });
 	let function_generics = &function.sig.generics;
 	let function_visibility = &function.vis;
 
-	let contexts: Vec<syn::Expr> = args.contexts.into_iter().map(|x| match x.as_str() {
-		"guild" => syn::parse_quote! { ribbon_commands_core::command::CommandContext::Guild },
-		"bot_dm" => syn::parse_quote! { ribbon_commands_core::command::CommandContext::BotDM },
-		"private_channel" => syn::parse_quote! { ribbon_commands_core::command::CommandContext::PrivateChannel },
+	let contexts: Vec<Expr> = args.contexts.into_iter().map(|x| match x.as_str() {
+		"guild" => parse_quote! { ribbon_commands_core::command::CommandContext::Guild },
+		"bot_dm" => parse_quote! { ribbon_commands_core::command::CommandContext::BotDM },
+		"private_channel" => parse_quote! { ribbon_commands_core::command::CommandContext::PrivateChannel },
 		_ => panic!("invalid context, must specify either guild, bot_dm, or private_channel")
 	}).collect();
 	let is_user = args.user;
@@ -82,8 +84,8 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 	let mut parameters: Vec<CommandOption> = vec![];
 	for command_param in function.sig.inputs.iter_mut().skip(1) {
 		let pattern = match command_param {
-			syn::FnArg::Typed(x) => x,
-			syn::FnArg::Receiver(r) => {
+			FnArg::Typed(x) => x,
+			FnArg::Receiver(r) => {
 				return Err(syn::Error::new(r.span(), "self argument is invalid here").into());
 			}
 		};
@@ -91,13 +93,13 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 		let attrs: Vec<_> = pattern
 			.attrs
 			.drain(..)
-			.map(|attr| darling::ast::NestedMeta::Meta(attr.meta))
+			.map(|attr| NestedMeta::Meta(attr.meta))
 			.collect();
-		let attrs = <ParamArgs as darling::FromMeta>::from_list(&attrs)?;
+		let attrs = <ParamArgs as FromMeta>::from_list(&attrs)?;
 
 		let name = if let Some(rename) = &attrs.rename {
 			rename.clone()
-		} else if let syn::Pat::Ident(ident) = &*pattern.pat {
+		} else if let Pat::Ident(ident) = &*pattern.pat {
 			ident.ident.to_string().trim_start_matches("r#").into()
 		} else {
 			let message = "#[rename = \"...\"] must be specified for pattern parameters";
@@ -106,7 +108,7 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 		let description = attrs.description;
 
 		let autocomplete = match attrs.autocomplete {
-			Some(autocomplete_fn) => quote::quote! {
+			Some(autocomplete_fn) => quote! {
 				Some(|interaction, partial| Box::pin(async move {
 					#autocomplete_fn(interaction, partial)
 						.await
@@ -116,7 +118,7 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 						})
 				}))
 			},
-			None => quote::quote! { None }
+			None => quote! { None }
 		};
 
 		let channel_kinds = match attrs.channel_kinds {
@@ -124,38 +126,38 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 				let kinds = channel_kinds
 					.into_iter()
 					.map(|x| match x.as_str() {
-						"guild_text" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildText },
-						"private" => syn::parse_quote! { twilight_model::channel::ChannelType::Private },
-						"guild_voice" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildVoice },
-						"group" => syn::parse_quote! { twilight_model::channel::ChannelType::Group },
-						"guild_category" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildCategory },
-						"guild_announcement" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildAnnouncement },
-						"announcement_thread" => syn::parse_quote! { twilight_model::channel::ChannelType::AnnouncementThread },
-						"public_thread" => syn::parse_quote! { twilight_model::channel::ChannelType::PublicThread },
-						"private_thread" => syn::parse_quote! { twilight_model::channel::ChannelType::PrivateThread },
-						"guild_stage_voice" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildStageVoice },
-						"guild_directory" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildDirectory },
-						"guild_forum" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildForum },
-						"guild_media" => syn::parse_quote! { twilight_model::channel::ChannelType::GuildMedia },
+						"guild_text" => parse_quote! { twilight_model::channel::ChannelType::GuildText },
+						"private" => parse_quote! { twilight_model::channel::ChannelType::Private },
+						"guild_voice" => parse_quote! { twilight_model::channel::ChannelType::GuildVoice },
+						"group" => parse_quote! { twilight_model::channel::ChannelType::Group },
+						"guild_category" => parse_quote! { twilight_model::channel::ChannelType::GuildCategory },
+						"guild_announcement" => parse_quote! { twilight_model::channel::ChannelType::GuildAnnouncement },
+						"announcement_thread" => parse_quote! { twilight_model::channel::ChannelType::AnnouncementThread },
+						"public_thread" => parse_quote! { twilight_model::channel::ChannelType::PublicThread },
+						"private_thread" => parse_quote! { twilight_model::channel::ChannelType::PrivateThread },
+						"guild_stage_voice" => parse_quote! { twilight_model::channel::ChannelType::GuildStageVoice },
+						"guild_directory" => parse_quote! { twilight_model::channel::ChannelType::GuildDirectory },
+						"guild_forum" => parse_quote! { twilight_model::channel::ChannelType::GuildForum },
+						"guild_media" => parse_quote! { twilight_model::channel::ChannelType::GuildMedia },
 						_ => panic!("invalid context, must specify either guild, bot_dm, or private_channel")
 					})
-					.collect::<Vec<syn::Expr>>();
-				quote::quote! { Some(vec![ #( #kinds),* ]) }
+					.collect::<Vec<Expr>>();
+				quote! { Some(vec![ #( #kinds),* ]) }
 			},
-			None => quote::quote! { None }
+			None => quote! { None }
 		};
 
 		let kind = &pattern.ty;
 		let extracted_type = util::extract_type_parameter("Option", kind);
 		let required = extracted_type.is_none();
 		let final_type = extracted_type.unwrap_or(kind);
-		let option_kind = quote::quote! {
+		let option_kind = quote! {
 			ribbon_commands_core::create_slash_argument!(#final_type)
 		};
 		parameters.push(CommandOption {
 			name: name.clone(),
 			kind: *kind.clone(),
-			blah: quote::quote! {
+			blah: quote! {
 				ribbon_commands_core::command::CommandOption {
 					name: #name.to_string(),
 					kind: #option_kind,
@@ -179,19 +181,19 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 		.map(|p| {
 			let t = &p.kind;
 			/*if p.args.flag {
-				quote::quote! { FLAG }
+				quote! { FLAG }
 			} else if let Some(choices) = &p.args.choices {
 				let choice_indices = (0..choices.0.len()).map(syn::Index::from);
 				let choice_vals = &choices.0;
-				quote::quote! { INLINE_CHOICE #t [#(#choice_indices: #choice_vals),*] }
+				quote! { INLINE_CHOICE #t [#(#choice_indices: #choice_vals),*] }
 			} else {
-				quote::quote! { #t }
+				quote! { #t }
 			}*/
-			quote::quote! { #t }
+			quote! { #t }
 		})
 		.collect::<Vec<_>>();
 
-	let handler = quote::quote! {
+	let handler = quote! {
 		|context| Box::pin(async move {
 			let ( #( #param_identifiers, )* ) = ribbon_commands_core::parse_command_arguments!(
 				&context, &context.options =>
@@ -212,10 +214,7 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 		})
 	};
 
-	let name = match args.rename {
-		Some(x) => x,
-		None => function_name
-	};
+	let name = args.rename.unwrap_or(function_name);
 	let options: Vec<proc_macro2::TokenStream> = parameters.into_iter().map(|x| x.blah).collect();
 	let subcommands = args.subcommands.0;
 	Ok(TokenStream::from(quote::quote! {
@@ -239,7 +238,7 @@ fn create_command(args: TokenStream, mut function: syn::ItemFn) -> Result<TokenS
 
 #[proc_macro_attribute]
 pub fn command(args: TokenStream, function: TokenStream) -> TokenStream {
-	let function = syn::parse_macro_input!(function as syn::ItemFn);
+	let function = syn::parse_macro_input!(function as ItemFn);
 	match create_command(args, function) {
 		Ok(x) => x,
 		Err(x) => x.write_errors().into()
