@@ -9,6 +9,9 @@ pub enum Error {
 	#[error("Command Core: {0}")]
 	CommandCore(#[from] ribbon_commands_core::CoreError),
 
+	#[error("I/O: {0}")]
+	Io(#[from] std::io::Error),
+
 	#[error("Model: {0}")]
 	Model(#[from] ribbon_models::Error),
 

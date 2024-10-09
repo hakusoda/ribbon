@@ -9,7 +9,7 @@ use rand::{ distributions::Alphanumeric, Rng };
 use ribbon_models::{
 	discord::InteractionRef,
 	ribbon::{
-		user::RobloxAccountModel,
+		user::{ RobloxAccountModel, SessionModel, WebsiteQuickLinkModel },
 		AuthoriseRequestModel, MemberLinkModel, ServerModel, UserModel
 	}
 };
@@ -18,17 +18,20 @@ use twilight_model::id::{
 	Id
 };	
 
-use crate::Result;
+use crate::{ Error, Result };
 
 #[derive(Default)]
 pub struct RibbonCache {
 	pub authorise_requests: DashMap<String, AuthoriseRequestModel>,
-	member_links: DashMap<u64, MemberLinkModel>,
+	pub jwt_sessions: DashMap<String, u64>,
+	pub member_links: DashMap<u64, MemberLinkModel>,
 	pub roblox_accounts: DashMap<u64, RobloxAccountModel>,
 	pub servers: DashMap<Id<GuildMarker>, ServerModel>,
-	server_member_links: DashMap<Id<GuildMarker>, DashSet<u64>>,
+	pub server_member_links: DashMap<Id<GuildMarker>, DashSet<u64>>,
+	pub sessions: DashMap<u64, SessionModel>,
 	users: DashMap<Id<UserMarker>, UserModel>,
-	pub user_roblox_accounts: DashMap<Id<UserMarker>, DashSet<u64>>
+	pub user_roblox_accounts: DashMap<Id<UserMarker>, DashSet<u64>>,
+	pub website_quick_links: DashMap<String, WebsiteQuickLinkModel>
 }
 
 impl RibbonCache {
@@ -85,6 +88,22 @@ impl RibbonCache {
 			None => self
 				._insert_server(guild_id)
 				.await?
+		})
+	}
+
+	pub async fn session(&self, session_id: u64) -> Result<Ref<'_, u64, SessionModel>> {
+		Ok(match self.sessions.get(&session_id) {
+			Some(model) => model,
+			None => {
+				let new_model = SessionModel::get(session_id)
+					.await?
+					.ok_or(Error::NotFound)?;
+				self.
+					sessions
+					.entry(session_id)
+					.insert(new_model)
+					.downgrade()
+			}
 		})
 	}
 

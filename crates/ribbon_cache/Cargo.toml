@@ -15,7 +15,7 @@ rust-version.workspace = true
 [dependencies]
 dashmap.workspace = true
 futures.workspace = true
-rand = "0.8.5"
+rand.workspace = true
 ribbon_models.path = "../ribbon_models"
 ribbon_util.path = "../ribbon_util"
 once_cell.workspace = true

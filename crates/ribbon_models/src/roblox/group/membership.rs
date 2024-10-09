@@ -1,5 +1,6 @@
-use ribbon_util::{ ROBLOX_OPEN_CLOUD_KEY, get_json };
+use ribbon_util::{ id_marker::GroupMarker, ROBLOX_OPEN_CLOUD_KEY, get_json };
 use serde::Deserialize;
+use twilight_model::id::Id;
 
 use crate::Result;
 
@@ -39,7 +40,7 @@ impl MembershipModel {
 	}
 
 	// TODO: not this
-	pub fn group_id(&self) -> u64 {
+	pub fn group_id(&self) -> Id<GroupMarker> {
 		self
 			.role
 			.split('/')

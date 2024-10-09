@@ -1,4 +1,5 @@
 use ribbon_util::DISCORD_CLIENT;
+use serde::Serialize;
 use twilight_model::{
 	id::{
 		marker::{ ChannelMarker, GuildMarker, UserMarker },
@@ -27,7 +28,7 @@ pub use member::MemberModel;
 pub mod role;
 pub use role::RoleModel;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct GuildModel {
     pub afk_channel_id: Option<Id<ChannelMarker>>,
     pub afk_timeout: AfkTimeout,

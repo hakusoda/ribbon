@@ -1,5 +1,6 @@
 use futures::TryStreamExt;
 use ribbon_util::PG_POOL;
+use serde::Serialize;
 use std::pin::Pin;
 use twilight_model::id::{
 	marker::UserMarker,
@@ -9,8 +10,15 @@ use twilight_model::id::{
 pub mod roblox_account;
 pub use roblox_account::RobloxAccountModel;
 
+pub mod session;
+pub use session::SessionModel;
+
+pub mod website_quick_link;
+pub use website_quick_link::WebsiteQuickLinkModel;
+
 use crate::Result;
 
+#[derive(Clone, Serialize)]
 pub struct UserModel {
 	pub id: Id<UserMarker>
 }

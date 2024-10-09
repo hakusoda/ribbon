@@ -74,6 +74,7 @@ impl SyncOperation {
 									disabled: false,
 									emoji: Some(Emoji::IconRoblox.into()),
 									label: Some("Connect Roblox Account".into()),
+									sku_id: None,
 									style: ButtonStyle::Link,
 									url: Some(callback_url)
 								}.into()]
@@ -82,7 +83,7 @@ impl SyncOperation {
 								let guild = CACHE
 									.discord
 									.guild(guild_id)
-									.await?;
+									.unwrap();
 								format!(
 									"
 									## {}{}  Ribbon welcomes you to {}!\n\
@@ -216,6 +217,7 @@ impl SyncOperation {
 							disabled: false,
 							emoji: Some(Emoji::ArrowClockwise.into()),
 							label: Some("Sync Again".into()),
+							sku_id: None,
 							style: ButtonStyle::Primary,
 							url: None
 						}.into(),
@@ -224,6 +226,7 @@ impl SyncOperation {
 							disabled: false,
 							emoji: Some(Emoji::IconDiscord.into()),
 							label: Some("Get Support".into()),
+							sku_id: None,
 							style: ButtonStyle::Link,
 							url: Some("https://discord.com/invite/rs3r4dQu9P".into())
 						}.into()

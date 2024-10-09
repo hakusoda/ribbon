@@ -9,7 +9,7 @@ mod dm;
 mod guild;
 
 pub static COMMANDS: Lazy<Vec<Command>> = Lazy::new(|| vec![
-	guild::guild_test(),
+	guild::dashboard(),
 	guild::sync()
 ]);
 

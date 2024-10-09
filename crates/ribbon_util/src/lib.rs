@@ -8,6 +8,8 @@ use twilight_model::id::{ marker::ApplicationMarker, Id };
 pub mod fetch;
 pub use fetch::*;
 
+pub mod id_marker;
+
 pub static FRONTEND_URL: &str = env!("FRONTEND_URL");
 pub static WEBSITE_URL: &str = env!("WEBSITE_URL");
 

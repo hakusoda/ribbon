@@ -2,6 +2,9 @@
 pub enum Error {
 	#[error("Model Error: {0}")]
 	ModelError(#[from] ribbon_models::Error),
+
+	#[error("Not found")]
+	NotFound,
 	
 	#[error("SQLx: {0}")]
 	Sqlx(#[from] sqlx::Error),

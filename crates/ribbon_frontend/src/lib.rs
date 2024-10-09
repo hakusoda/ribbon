@@ -11,6 +11,7 @@ use ribbon_cache::CACHE;
 use ribbon_util::PG_POOL;
 use std::pin::Pin;
 
+mod auth;
 pub mod error;
 pub mod routes;
 mod templates;

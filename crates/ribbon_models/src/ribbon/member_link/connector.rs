@@ -4,12 +4,12 @@ use twilight_model::id::{
 	Id
 };
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 pub struct ConnectorsModel {
 	pub items: Vec<Connector>
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Connector {
 	Nickname,

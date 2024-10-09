@@ -1,5 +1,6 @@
 use futures::TryStreamExt;
 use ribbon_util::PG_POOL;
+use serde::Serialize;
 use std::pin::Pin;
 use twilight_model::id::{
 	marker::GuildMarker,
@@ -14,6 +15,7 @@ pub mod criteria;
 pub use connector::ConnectorsModel;
 pub use criteria::CriteriaModel;
 
+#[derive(Serialize)]
 pub struct MemberLinkModel {
 	pub connectors: ConnectorsModel,
 	pub criteria: CriteriaModel,

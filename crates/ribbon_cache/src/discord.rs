@@ -2,14 +2,14 @@ use dashmap::{
 	mapref::one::Ref,
 	DashMap, DashSet
 };
-use twilight_model::id::{
-	marker::{ ChannelMarker, EmojiMarker, GuildMarker, RoleMarker, UserMarker },
-	Id
-};	
 use ribbon_models::discord::{
 	guild::{ MemberModel, RoleModel },
 	ChannelModel, EmojiModel, GuildModel
 };
+use twilight_model::id::{
+	marker::{ ChannelMarker, EmojiMarker, GuildMarker, RoleMarker, UserMarker },
+	Id
+};	
 
 use crate::Result;
 
@@ -20,6 +20,7 @@ pub struct DiscordCache {
 	pub emojis: DashMap<Id<EmojiMarker>, EmojiModel>,
 	pub emojis_mapped: DashMap<String, Id<EmojiMarker>>,
 	pub guilds: DashMap<Id<GuildMarker>, GuildModel>,
+	pub guild_roles: DashMap<Id<GuildMarker>, DashSet<Id<RoleMarker>>>,
 	pub members: DashMap<(Id<GuildMarker>, Id<UserMarker>), MemberModel>,
 	pub private_channels: DashMap<Id<UserMarker>, Id<ChannelMarker>>,
 	pub roles: DashMap<Id<RoleMarker>, RoleModel>
@@ -32,7 +33,8 @@ impl DiscordCache {
 			None => {
 				let new_model = ChannelModel::get(channel_id)
 					.await?;
-				self.channels.entry(channel_id)
+				self.channels
+					.entry(channel_id)
 					.insert(new_model)
 					.downgrade()
 			}
@@ -51,18 +53,19 @@ impl DiscordCache {
 			.copied()
 	}
 
-	pub async fn guild(&self, guild_id: Id<GuildMarker>) -> Result<Ref<'_, Id<GuildMarker>, GuildModel>> {
-		Ok(match self.guilds.get(&guild_id) {
-			Some(model) => model,
-			None => {
-				let new_model = GuildModel::get(guild_id)
-					.await?;
-				self.guilds
-					.entry(guild_id)
-					.insert(new_model)
-					.downgrade()
-			}
-		})
+	pub fn guild(&self, guild_id: Id<GuildMarker>) -> Option<Ref<'_, Id<GuildMarker>, GuildModel>> {
+		self.guilds.get(&guild_id)
+	}
+
+	pub fn guild_roles(&self, guild_id: Id<GuildMarker>) -> Vec<Id<RoleMarker>> {
+		if let Some(role_ids) = self.guild_roles.get(&guild_id) {
+			role_ids
+				.iter()
+				.map(|x| *x)
+				.collect()
+		} else {
+			Vec::new()
+		}
 	}
 
 	pub async fn member(&self, guild_id: Id<GuildMarker>, user_id: Id<UserMarker>) -> Result<Ref<'_, (Id<GuildMarker>, Id<UserMarker>), MemberModel>> {

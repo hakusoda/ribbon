@@ -13,6 +13,8 @@ impl Display for ErrorModel {
 	}
 }
 
+impl std::error::Error for ErrorModel {}
+
 impl actix_web::ResponseError for ErrorModel {
 	fn status_code(&self) -> StatusCode {
 		match self.error {
@@ -45,18 +47,35 @@ impl From<ErrorModelKind> for ErrorModel {
 
 impl From<ribbon_cache::Error> for ErrorModel {
 	fn from(_value: ribbon_cache::Error) -> Self {
+		println!("{_value}");
+		ErrorModelKind::InternalError.model()
+	}
+}
+
+impl From<ribbon_models::Error> for ErrorModel {
+	fn from(_value: ribbon_models::Error) -> Self {
+		println!("{_value}");
 		ErrorModelKind::InternalError.model()
 	}
 }
 
 impl From<ribbon_syncing::Error> for ErrorModel {
 	fn from(_value: ribbon_syncing::Error) -> Self {
+		println!("{_value}");
 		ErrorModelKind::InternalError.model()
 	}
 }
 
 impl From<jsonwebtoken::errors::Error> for ErrorModel {
 	fn from(_value: jsonwebtoken::errors::Error) -> Self {
+		println!("{_value}");
+		ErrorModelKind::InternalError.model()
+	}
+}
+
+impl From<p384::ecdsa::Error> for ErrorModel {
+	fn from(_value: p384::ecdsa::Error) -> Self {
+		println!("{_value}");
 		ErrorModelKind::InternalError.model()
 	}
 }
@@ -117,11 +136,10 @@ impl ErrorModelKind {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ResourceKind {
-	Group,
-	GroupMembership,
-	PasskeyChallenge,
 	Route,
+	Server,
+	ServerMemberLink,
 	User,
 	UserConnection,
-	VisualScriptingDocument
+	WebsiteQuickLink
 }

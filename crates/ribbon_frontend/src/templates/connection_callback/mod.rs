@@ -29,8 +29,7 @@ pub async fn finished_guild(guild_id: Id<GuildMarker>, roblox_user: &RobloxUser)
 	let guild = CACHE
 		.discord
 		.guild(guild_id)
-		.await
-		.map_err(|_| ErrorModelKind::Cache.model())?;
+		.ok_or_else(|| ErrorModelKind::Cache.model())?;
 	if let Some(avatar_url) = guild.avatar_url() {
 		body = body.replace("{{ guild_avatar }}", &avatar_url);
 	}

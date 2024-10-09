@@ -15,6 +15,8 @@ rust-version.workspace = true
 [dependencies]
 ribbon_cache.path = "../ribbon_cache"
 ribbon_commands_core.path = "../ribbon_commands_core"
+ribbon_emojis.path = "../ribbon_emojis"
+ribbon_models.path = "../ribbon_models"
 ribbon_syncing.path = "../ribbon_syncing"
 ribbon_util.path = "../ribbon_util"
 

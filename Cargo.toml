@@ -12,27 +12,29 @@ repository = "https://github.com/hakusoda/ribbon"
 rust-version = "1.79"
 
 [workspace.dependencies]
-actix-web = "4.8.0"
-async-once-cell = "0.5.3"
+actix-web = "4.9.0"
+async-once-cell = "0.5.4"
 base64 = "0.22.1"
 chrono = "0.4.38"
-dashmap = { version = "6.0.1", features = ["inline"] }
-futures = "0.3.30"
+dashmap = { version = "6.1.0", features = ["inline"] }
+futures = "0.3.31"
 jsonwebtoken = "9.3.0"
 log = "0.4.22"
-once_cell = "1.19.0"
-reqwest = "0.12.5"
-serde = { version = "1.0.204", features = ["derive"] }
+once_cell = "1.20.2"
+p384 = "0.13.0"
+rand = "0.8.5"
+reqwest = "0.12.8"
+serde = { version = "1.0.210", features = ["derive"] }
 serde-aux = "4.5.0"
-serde_json = "1.0.121"
+serde_json = "1.0.128"
 serde_repr = "0.1.19"
-sqlx = { version = "0.7.4", features = ["uuid", "json", "chrono", "macros", "postgres", "tls-native-tls", "rust_decimal", "runtime-tokio"] }
-thiserror = "1.0.62"
-tokio = { version = "1.38.0", features = ["full"] }
-twilight-http = { git = "https://github.com/twilight-rs/twilight.git", rev = "f963532", features = ["simd-json"] }
-twilight-gateway = { git = "https://github.com/twilight-rs/twilight.git", rev = "f963532", features = ["simd-json"] }
-twilight-model = { git = "https://github.com/twilight-rs/twilight.git", rev = "f963532" }
-twilight-util = { git = "https://github.com/twilight-rs/twilight.git", rev = "f963532", features = ["builder"] }
+sqlx = { version = "0.8.2", features = ["uuid", "json", "chrono", "macros", "postgres", "tls-native-tls", "rust_decimal", "runtime-tokio"] }
+thiserror = "1.0.64"
+tokio = { version = "1.40.0", features = ["full"] }
+twilight-http = { git = "https://github.com/twilight-rs/twilight.git", rev = "956ad94", features = ["simd-json"] }
+twilight-gateway = { git = "https://github.com/twilight-rs/twilight.git", rev = "956ad94", features = ["simd-json"] }
+twilight-model = { git = "https://github.com/twilight-rs/twilight.git", rev = "956ad94" }
+twilight-util = { git = "https://github.com/twilight-rs/twilight.git", rev = "956ad94", features = ["builder"] }
 urlencoding = "2.1.3"
 uuid = "1.10.0"
 validator = "0.18.1"

@@ -1,4 +1,5 @@
 use ribbon_util::PG_POOL;
+use serde::Serialize;
 use twilight_model::id::{
 	marker::GuildMarker,
 	Id
@@ -6,8 +7,10 @@ use twilight_model::id::{
 
 use crate::Result;
 
+#[derive(Serialize)]
 pub struct ServerModel {
-	pub id: Id<GuildMarker>
+	pub id: Id<GuildMarker>,
+	pub display_name: String
 }
 
 impl ServerModel {
@@ -23,7 +26,8 @@ impl ServerModel {
 			.fetch_optional(&*std::pin::Pin::static_ref(&PG_POOL).await)
 			.await?
 			.map(|record| Self {
-				id: Id::new(record.id as u64)
+				id: Id::new(record.id as u64),
+				display_name: "placeholder".into()
 			})
 		)
 	}
@@ -32,7 +36,8 @@ impl ServerModel {
 impl From<Id<GuildMarker>> for ServerModel {
 	fn from(value: Id<GuildMarker>) -> Self {
 		Self {
-			id: value
+			id: value,
+			display_name: "placeholder".into()
 		}
 	}
 }
