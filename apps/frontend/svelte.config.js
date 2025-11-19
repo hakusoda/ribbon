@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-vercel';
 import { mdsvex } from 'mdsvex';
+import { join } from 'path';
 import { sveltePreprocess } from 'svelte-preprocess';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
@@ -13,7 +14,7 @@ export default {
 	preprocess: [
 		mdsvex({
 			extension: '.md',
-			layout: 'src/lib/interface/layouts/markdown.svelte'
+			layout: join(import.meta.dirname, './src/lib/interface/layouts/markdown.svelte')
 		}),
 		sveltePreprocess({}),
 		vitePreprocess()
