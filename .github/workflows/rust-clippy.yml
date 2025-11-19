@@ -2,10 +2,15 @@ name: rust-clippy analyze
 
 on:
   push:
-    branches: [ "main" ]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    types:
+      - opened
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
   schedule:
     - cron: '20 2 * * 5'
 
