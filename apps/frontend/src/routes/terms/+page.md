@@ -1,9 +1,9 @@
 # Terms of Service
-Last Updated: February 15th, 2025
+Last Updated: November 19th, 2025.
 
 ## 1. Introduction
 
-Ribbon is a Discord bot designed to integrate and synchronize, wherever readable and accessible, Roblox features, digital assets, and other API functionalities. By using Ribbon, you agree to these Terms of Service. If you do not agree, you must discontinue use immediately.
+Ribbon is a Discord bot operated by [HAKUMI](https://hakumi.cafe), designed to integrate and synchronize, wherever readable and accessible, Roblox features, digital assets, and other API functionalities. By using Ribbon, you agree to these Terms of Service. If you do not agree, you must discontinue use immediately.
 
 ## 2. Scope of Service
 
@@ -72,8 +72,9 @@ While Ribbon is designed to be secure and reliable, users should be aware of pot
 
 ## 9. Amendments to Terms
 
-We may update these Terms of Service periodically. Continued use of Ribbon after changes are made constitutes acceptance of the revised terms. Users will be notified of significant updates through the **HAKUMI Discord server** and the official Ribbon website.
+We may update these Terms of Service periodically. Continued use of Ribbon after changes are made constitutes acceptance of the revised terms.
 
-## 10. Contact Information
+## 10. Contact Us
+If you have any questions about, or are looking to contact us in relation to, these terms, please contact us via **hello@hakumi.cafe**.
 
-For any questions or concerns regarding Ribbon’s Terms of Service, contact us through the **HAKUMI Discord server** or email **help@hakumi.cafe**.
+If you're looking to share feedback, comments, or otherwise happy words, feel free to let us know [here](https://discord.com/invite/VqdbdrnTCG).

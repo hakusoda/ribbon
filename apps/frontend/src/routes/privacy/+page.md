@@ -1,5 +1,5 @@
 # Privacy Policy
-Last Updated: February 15th, 2025
+Last Updated: November 19th, 2025.
 
 ## 1. Introduction
 
@@ -63,7 +63,7 @@ Users have the following rights regarding their data:
 * **Erasure:** Users can request the deletion of stored data related to their activity.  
 * **Correction:** Users can request corrections to inaccurate or incomplete data.
 
-Until an automated feature is available on the official website, users can exercise these rights by contacting the Ribbon team via the **HAKUMI Discord server** or emailing **help@hakumi.cafe**.
+Users may exercise these rights by contacting us via **hello@hakumi.cafe**.
 
 ## 7. Third-Party Data Sharing
 
@@ -71,8 +71,8 @@ Ribbon **does not** share, sell, or distribute user data to third parties. Data 
 
 ## 8. Policy Updates
 
-This Privacy Policy is subject to change at any time. Users will be notified of updates via the **HAKUMI Discord server** and the official Ribbon website. Continued use of Ribbon after updates constitutes acceptance of the revised policy.
+This Privacy Policy is subject to change at any time. Continued use of Ribbon after updates constitutes acceptance of the revised policy.
 
-## 9. Contact Information
+## 9. Contact Us
 
-For any questions or concerns regarding Ribbon’s Privacy Policy, contact us through the **HAKUMI Discord server** or email **help@hakumi.cafe**.
+If you have any questions about this privacy policy, or how we process your data, please contact us via **hello@hakumi.cafe**.
