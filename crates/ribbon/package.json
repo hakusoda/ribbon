@@ -1,8 +1,0 @@
-{
-	"name": "@ribbonette/backend",
-	"private": true,
-	"scripts": {
-		"build": "cargo build --release",
-		"dev": "cargo watch -x run"
-	}
-}

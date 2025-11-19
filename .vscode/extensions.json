@@ -2,7 +2,6 @@
 	"recommendations": [
 		"tamasfe.even-better-toml",
 		"fill-labs.dependi",
-		"ms-azuretools.vscode-docker",
 		"rust-lang.rust-analyzer",
 		"svelte.svelte-vscode",
 		"vercel.turbo-vsc"

@@ -1,4 +1,5 @@
 import icons from 'unplugin-icons/vite'
+import { sentrySvelteKit } from '@sentry/sveltekit';
 import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 export default {
@@ -13,6 +14,7 @@ export default {
 				props['font-size'] = '16px';
 			}
 		}),
+		sentrySvelteKit(),
 		sveltekit()
 	],
 	server: {

@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	
 	import '$lib/interface/styles/root.scss';
+	import { PUBLIC_DASHBOARD_URL } from '$env/static/public';
+	
 	import BrandLogo from '$lib/interface/visuals/brand_logo.svelte';
 	
 	let header_hover = false;
@@ -15,7 +17,7 @@
 			<BrandLogo height={30}/>
 		</a>
 		<div class="links">
-			<a href="/dashboard">
+			<a href={PUBLIC_DASHBOARD_URL}>
 				Dashboard
 			</a>
 		</div>

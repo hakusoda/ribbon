@@ -1,5 +1,5 @@
 [package]
-name = "ribbon"
+name = "ribbon_worker"
 
 authors.workspace = true
 edition.workspace = true
@@ -10,7 +10,4 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-dotenvy.workspace = true
-ribbon_worker.path = "../ribbon_worker"
 starlight.workspace = true
-tokio.workspace = true
