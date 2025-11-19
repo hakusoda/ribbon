@@ -13,7 +13,7 @@ export default {
 	preprocess: [
 		mdsvex({
 			extension: '.md',
-			layout: './src/lib/interface/layouts/markdown.svelte'
+			layout: 'src/lib/interface/layouts/markdown.svelte'
 		}),
 		sveltePreprocess({}),
 		vitePreprocess()
