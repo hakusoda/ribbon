@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"strict": true,
+		"verbatimModuleSyntax": true,
+	},
+	"extends": "./.svelte-kit/tsconfig.json"
+}

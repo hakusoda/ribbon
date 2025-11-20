@@ -8,13 +8,16 @@
 	"scripts": {
 		"backend:build": "turbo run build --filter=@ribbonette/backend",
 		"backend:dev": "turbo run dev --filter=@ribbonette/backend",
-		"web:build": "turbo run build --filter=@ribbonette/dashboard --filter=@ribbonette/frontend",
-		"web:dev": "turbo run dev --filter=@ribbonette/dashboard --filter=@ribbonette/frontend",
+		"web:build": "turbo run build --filter=@ribbonette/frontend",
+		"web:dev": "turbo run dev --filter=@ribbonette/frontend",
 		"build": "turbo run build --continue"
 	},
-	"workspaces": ["apps/*", "crates/ribbon"],
+	"workspaces": [
+		"crates/ribbon",
+		"packages/*"
+	],
 	"devDependencies": {
-		"turbo": "^2.4.2"
+		"turbo": "^2.6.1"
 	},
 	"packageManager": "yarn@1.22.22"
 }
