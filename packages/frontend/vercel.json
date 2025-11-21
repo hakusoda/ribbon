@@ -1,5 +1,7 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": "sveltekit-1",
+	"buildCommand": "yarn build",
+	"installCommand": "yarn",
 	"trailingSlash": false
 }
