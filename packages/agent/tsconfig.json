@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"strict": true,
+		"target": "esnext",
+		"verbatimModuleSyntax": true,
+	}
+}

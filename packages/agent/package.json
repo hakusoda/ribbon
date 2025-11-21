@@ -1,0 +1,10 @@
+{
+	"name": "@ribbonette/agent",
+	"author": "HAKUMI",
+	"main": "./src/index.ts",
+	"type": "module",
+	"repository": "https://github.com/hakusoda/ribbon.git",
+	"license": "AGPL-3.0-only",
+	"private": true,
+	"version": "0.1.0"
+}

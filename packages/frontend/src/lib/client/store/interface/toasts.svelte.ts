@@ -14,13 +14,11 @@ export function create_toast(options: CreateToastOptions) {
 		content_id: options.content_id,
 		metadata: options.metadata ?? {},
 
-		timeout: setTimeout(() => remove_toast(new_toast), 6000)
+		timeout: setTimeout(() => remove_toast(), 6000)
 	};
 	toast_items.push(new_toast);
 }
 
-export function remove_toast(toast: Toast) {
-	const toast_index = toast_items.indexOf(toast);
-	if (toast_index != -1)
-		toast_items.splice(toast_index, 1);
+export function remove_toast() {
+	toast_items.shift();
 }

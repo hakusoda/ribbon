@@ -31,7 +31,7 @@
 		<button type="button" onclick={() => {
 			fade = true;
 			clearTimeout(toast.timeout);
-			setTimeout(() => remove_toast(toast), 500);
+			setTimeout(remove_toast, 500);
 
 			action_item.callback();
 		}}>

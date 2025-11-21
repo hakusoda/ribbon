@@ -2,18 +2,18 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { get_server_member_links, update_server_member_link } from '$lib/client/api/server';
+	import { agent } from '$lib/client/agent';
 	import { create_toast } from '$lib/client/store/interface/toasts.svelte';
 	import type { Connector, Connectors, Criteria, CriteriaItem, MemberLink } from '$lib/client/types/api/server';
 
-	$: member_link_id = parseInt($page.params.member_link_id);
-	$: server_id = $page.params.server_id;
+	const member_link_id = $derived(parseInt(page.params.member_link_id!));
+	const server_id = $derived(page.params.server_id!);
 
-	let member_link: MemberLink | null = null;
+	let member_link: MemberLink | null = $state(null);
 	onMount(async () => {
-		const member_links = await get_server_member_links(server_id);
+		const member_links = await agent.servers.get_member_links(server_id);
 		const current_member_link = member_links
 			.find(item => item.id == member_link_id);
 		if (!current_member_link)
@@ -25,9 +25,9 @@
 		member_link = current_member_link
 	});
 
-	let connectors: Connectors = { items: [] };
-	let criteria: Criteria = { items: [] };
-	let display_name = '';
+	let connectors: Connectors = $state({ items: [] });
+	let criteria: Criteria = $state({ items: [] });
+	let display_name = $state('');
 
 	let dialog_element: HTMLDialogElement;
 	let dialog_element2: HTMLDialogElement;
@@ -48,11 +48,11 @@
 		return { kind: criteria_kind };
 	}
 
-	let is_saving = false;
+	let is_saving = $state(false);
 	async function save_changes() {
 		is_saving = true;
 
-		await update_server_member_link(server_id, member_link_id, {
+		await agent.servers.update_member_link(server_id, member_link_id, {
 			connectors,
 			criteria,
 			display_name
@@ -103,7 +103,7 @@
 							{/if}
 						</th>
 						<td>
-							<button type="button" on:click={() => criteria.items = criteria.items.filter(item => item !== criteria_item)}>
+							<button type="button" onclick={() => criteria.items = criteria.items.filter(item => item !== criteria_item)}>
 								delete
 							</button>
 						</td>
@@ -111,7 +111,7 @@
 				{/each}
 				<tr>
 					<th>
-						<button type="button" on:click={() => dialog_element.show()}>
+						<button type="button" onclick={() => dialog_element.show()}>
 							add new criteria item
 						</button>
 					</th>
@@ -136,22 +136,22 @@
 						<th>
 							{#if connector_item.kind === 'roles'}
 								<div class="roles">
-									{#each connector_item.target_role_ids as role_id}
+									{#each connector_item.target_role_ids as role_id, index}
 										<div class="role">
-											<input type="text" bind:value={role_id}/>
-											<button type="button" on:click={() => connector_item.target_role_ids = connector_item.target_role_ids.filter(item => item != role_id)}>
+											<input type="text" bind:value={connector_item.target_role_ids[index]}/>
+											<button type="button" onclick={() => connector_item.target_role_ids = connector_item.target_role_ids.filter(item => item != role_id)}>
 												X
 											</button>
 										</div>
 									{/each}
 								</div>
-								<button type="button" on:click={() => connector_item.target_role_ids = [...connector_item.target_role_ids, '']}>
+								<button type="button" onclick={() => connector_item.target_role_ids = [...connector_item.target_role_ids, '']}>
 									add role
 								</button>
 							{/if}
 						</th>
 						<td>
-							<button type="button" on:click={() => connectors.items = connectors.items.filter(item => item !== connector_item)}>
+							<button type="button" onclick={() => connectors.items = connectors.items.filter(item => item !== connector_item)}>
 								delete
 							</button>
 						</td>
@@ -159,7 +159,7 @@
 				{/each}
 				<tr>
 					<th>
-						<button type="button" on:click={() => dialog_element2.show()}>
+						<button type="button" onclick={() => dialog_element2.show()}>
 							add new connector
 						</button>
 					</th>
@@ -170,7 +170,7 @@
 		</table>
 
 		<div>
-			<button type="button" disabled={is_saving} on:click={save_changes}>
+			<button type="button" disabled={is_saving} onclick={save_changes}>
 				save changes
 			</button>
 			<a href={`/server/${server_id}/member_links`}>
@@ -185,7 +185,7 @@
 <dialog bind:this={dialog_element}>
 	<p>select kind</p>
 	{#each criteria_kinds as kind}
-		<button type="button" on:click={() => {
+		<button type="button" onclick={() => {
 			criteria.items = [...criteria.items, create_criteria_item(kind)];
 			dialog_element.close();
 		}}>
@@ -197,7 +197,7 @@
 <dialog bind:this={dialog_element2}>
 	<p>select kind</p>
 	{#each connector_kinds as kind}
-		<button type="button" on:click={() => {
+		<button type="button" onclick={() => {
 			connectors.items = [...connectors.items, create_connector(kind)];
 			dialog_element2.close();
 		}}>

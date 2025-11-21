@@ -2,11 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
-	import { create_server_member_link } from '$lib/client/api/server';
+	import { agent } from '$lib/client/agent';
 	import { create_server_member_links_query } from '$lib/client/query/server';
 	import { create_toast } from '$lib/client/store/interface/toasts.svelte';
 
-	const server_id = page.params.server_id;
+	const server_id = page.params.server_id!;
 	const member_links = create_server_member_links_query(server_id);
 
 	let dialog_element: HTMLDialogElement;
@@ -14,7 +14,8 @@
 	let new_creating = false;
 	const create_new = async () => {
 		new_creating = true;
-		const new_member_link = await create_server_member_link(server_id, new_display_name);
+		
+		const new_member_link = await agent.servers.create_member_link(server_id, new_display_name);
 		if (!new_member_link.id)
 			return;
 
@@ -34,10 +35,10 @@
 	};
 </script>
 
-{#if $member_links.isPending}
+{#if member_links.isPending}
 	we're loading them links!!!
-{:else if $member_links.isError}
-	{$member_links.error}
+{:else if member_links.isError}
+	{member_links.error}
 {:else}
 	<h1>Member Links</h1>
 	<table>
@@ -50,7 +51,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each $member_links.data as member_link}
+			{#each member_links.data as member_link}
 				<tr>
 					<th>{member_link.display_name}</th>
 					<td>{member_link.connectors.items.length}</td>
