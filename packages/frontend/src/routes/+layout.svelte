@@ -1,26 +1,39 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	
+	import { create_toast } from '$lib/client/store/interface/toasts.svelte';
 	import { FetchError } from '$lib/fetch';
 	
 	import { browser } from '$app/environment';
+	import { PUBLIC_SOCIAL_LINK_DISCORD, PUBLIC_SOCIAL_LINK_GITHUB, PUBLIC_SOCIAL_LINK_KOFI } from '$env/static/public';
 	
 	import '$lib/interface/styles/root.scss';
+	
 	import BrandLogo from '$lib/interface/visuals/brand_logo.svelte';
+	import DiscordIcon from '$lib/interface/visuals/socials/discord_icon.svelte';
+	import HakumiLogo from '$lib/interface/visuals/hakumi_logo.svelte';
+	import KofiIcon from '$lib/interface/visuals/socials/kofi_icon.svelte';
+	
 	import ToastOverlay from '$lib/interface/components/overlays/toast_overlay.svelte';
 	const query_client = new QueryClient({
 		defaultOptions: {
 			queries: {
 				enabled: browser,
-				retry: (failure_count, error) => {
+				retry(failure_count, error) {
 					if (error instanceof FetchError && error.status === 401)
 						return false;
 					
 					return failure_count < 3;
 				}
 			}
-		}
+		},
+		queryCache: new QueryCache({
+			onError(error, query) {
+				if (error instanceof FetchError && error.status === 401)
+					create_toast({ content_id: 'error.resource.unauthenticated' });
+			}
+		})
 	});
 	
 	let header_hover = $state(false);
@@ -47,19 +60,40 @@
 		{@render children()}
 	</main>
 	<footer>
-		<div class="brand">
-			<BrandLogo height={32}/>
-			<p>
-				An experimental Roblox-centric Discord Bot developed by <a href="https://hakumi.cafe" target="_blank">HAKUMI</a>.
-			</p>
-		</div>
-		<div class="links">
-			<a href="/terms">
-				Terms
-			</a>
-			<a href="/privacy">
-				Privacy
-			</a>
+		<div class="footer_gradient"></div>
+		<div class="footer_contents">
+			<div class="brand">
+				<div class="studio_logos">
+					<a class="brand_logo" href="/" title="Ribbon">
+						<BrandLogo height={40}/>
+					</a>
+					<a class="brand_logo" href="https://hakumi.cafe" title="HAKUMI">
+						<HakumiLogo height={56}/>
+					</a>
+				</div>
+				<div class="lower_section">
+					<a class="social_logo" href={PUBLIC_SOCIAL_LINK_DISCORD} title="Discord" target="_blank">
+						<DiscordIcon size={24}/>
+					</a>
+					<a class="social_logo" href={PUBLIC_SOCIAL_LINK_KOFI} title="Ko-fi" target="_blank">
+						<KofiIcon size={24}/>
+					</a>
+					<p class="legal" aria-hidden="true">
+						© 2025 HAKUMI
+					</p>
+				</div>
+			</div>
+			<div class="links">
+				<a href="/terms">
+					Terms
+				</a>
+				<a href="/privacy">
+					Privacy
+				</a>
+				<a href={PUBLIC_SOCIAL_LINK_GITHUB}>
+					Open Source
+				</a>
+			</div>
 		</div>
 	</footer>
 	<ToastOverlay/>
@@ -121,31 +155,62 @@
 		}
 	}
 	main {
-		min-height: calc(100vh - 94px);
+		min-height: 100vh;
 		margin: 0 auto;
 		max-width: 1200px;
 		padding: 80px 16px;
 		width: 100%;
 	}
 	footer {
-		align-items: center;
-		display: flex;
-		margin: auto auto 0 auto;
-		max-width: 1200px;
-		padding: 48px 16px;
-		width: 100%;
-		p {
-			color: hsl(315 10% 40%);
-			font-size: .9em;
-			font-weight: 300;
-			a {
-				color: hsl(315 60% 80%);
-				font-weight: 400;
-				text-decoration: none;
-				transition: color .5s;
-				&:hover {
-					color: hsl(315 40% 90%);
-				}
+		background: linear-gradient(to bottom, hsl(350, 12%, 7%), hsl(10, 40%, 6%));
+		border-radius: 24px 24px 0 0;
+		border-top: 1px solid hsl(350, 20%, 13%);
+		overflow: hidden;
+		position: relative;
+		.footer_gradient {
+			background: #d22f661a;
+			border-radius: 50%;
+			bottom: 0;
+			content: '';
+			filter: blur(60px);
+			height: 50px;
+			left: 50%;
+			max-width: 1000px;
+			position: absolute;
+			transform: translate(-50%, 60%);
+			width: 70%;
+		}
+		.footer_contents {
+			align-items: center;
+			display: flex;
+			margin: auto auto 0 auto;
+			max-width: 1200px;
+			padding: 48px 16px;
+			width: 100%;
+		}
+		.studio_logos {
+			align-items: center;
+			display: flex;
+			gap: 40px;
+			.brand_logo {
+				color: #fff;
+				line-height: 0;
+			}
+		}
+		.lower_section {
+			align-items: center;
+			display: flex;
+			gap: 12px;
+			margin-top: 24px;
+			.social_logo {
+				color: #fff;
+				line-height: 0;
+			}
+			.legal {
+				font-family: 'Outfit', sans-serif;
+				font-size: .9em;
+				font-weight: 500;
+				margin: 0 12px 0 auto;
 			}
 		}
 		.links {
@@ -153,13 +218,13 @@
 			gap: 32px;
 			margin-left: auto;
 			a {
-				color: hsl(315 20% 60%);
+				color: var(--color-secondary);
 				font-size: .9em;
-				font-weight: 400;
+				font-weight: 450;
 				text-decoration: none;
 				transition: color .5s;
 				&:hover {
-					color: hsl(315 30% 80%);
+					color: var(--color-secondary-hover);
 				}
 			}
 		}

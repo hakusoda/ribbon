@@ -1,7 +1,7 @@
 <div class="marketing">
 	<h1>A modern way to integrate Roblox with Discord</h1>
 	<p>WOAHHHHHH!!!</p>
-	<a href="/">Get Started</a>
+	<a href="/start">Get Started</a>
 </div>
 
 <style lang="scss">
