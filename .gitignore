@@ -25,3 +25,4 @@ Cargo.lock
 .vercel/
 crates_old/
 node_modules/
+.vercel
