@@ -6,8 +6,9 @@
 	"private": true,
 	"version": "0.0.0",
 	"scripts": {
-		"backend:build": "turbo run build --filter=@ribbonette/backend",
-		"backend:dev": "turbo run dev --filter=@ribbonette/backend",
+		"backend:build": "cargo build --release",
+		"backend:dev": "cargo run",
+		"backend:watch": "cargo watch -x run",
 		"web:build": "turbo run build --filter=@ribbonette/frontend",
 		"web:dev": "turbo run dev --filter=@ribbonette/frontend",
 		"build": "turbo run build --continue"
