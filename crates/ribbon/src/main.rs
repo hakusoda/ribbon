@@ -7,6 +7,8 @@ mod commands;
 pub async fn main() {
 	dotenvy::dotenv().unwrap();
 	
+	rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
+	
 	let token = std::env::var("DISCORD_BOT_TOKEN")
 		.unwrap();
 	

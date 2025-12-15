@@ -10,7 +10,9 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+aws-lc-rs = "1.15.1"
 dotenvy.workspace = true
 ribbon_worker.path = "../ribbon_worker"
+rustls = "0.23.35"
 starlight.workspace = true
 tokio.workspace = true
