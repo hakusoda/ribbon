@@ -17,9 +17,20 @@ pub async fn main() {
 		.await;
 	println!("app started");
 	
-	tokio::signal::ctrl_c()
-		.await
-		.unwrap();
+	#[cfg(unix)] {
+		use tokio::signal::unix::{ SignalKind, signal };
+		
+		let mut sigterm = signal(SignalKind::terminate()).unwrap();
+		tokio::select! {
+			_ = tokio::signal::ctrl_c() => {}
+			_ = sigterm.recv() => {}
+		}
+	}
+	#[cfg(not(unix))] {
+		tokio::signal::ctrl_c()
+			.await
+			.unwrap();
+	}
 	println!("shutdown signal received");
 	
 	app
