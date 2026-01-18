@@ -2,10 +2,9 @@ import type UserRibbonAgent from '../agent';
 import type { RibbonAgentServerApi } from '../../types/agent/apis/server';
 import type { GetServerResponse } from '../../types/api/server';
 import type {
-	CreateServerMemberLinkResponse,
-	GetServerMemberLinksResponse,
-	UpdateServerMemberLinkPayload,
-	MemberLink
+	GetServerRolesResponse,
+	UpdateServerRolePayload,
+	ServerRole
 } from '../../types/api/server/member_link';
 
 export default class MockRibbonAgentServerApi implements RibbonAgentServerApi {
@@ -17,43 +16,15 @@ export default class MockRibbonAgentServerApi implements RibbonAgentServerApi {
 		return Promise.resolve(this.internal_get(server_id));
 	}
 	
-	public get_member_links(server_id: string): Promise<GetServerMemberLinksResponse> {
-		return Promise.resolve(this.internal_get(server_id).member_links.values().toArray());
+	public get_roles(server_id: string): Promise<GetServerRolesResponse> {
+		return Promise.resolve(this.internal_get(server_id).roles.values().toArray());
 	}
 	
-	public create_member_link(server_id: string, display_name: string): Promise<CreateServerMemberLinkResponse> {
+	public update_role(server_id: string, role_id: string, payload: UpdateServerRolePayload): Promise<void> {
 		const server = this.internal_get(server_id);
-		
-		const new_link: MemberLink = {
-			id: server.member_links.size + 1,
-			display_name,
-			connectors: { items: [] },
-			criteria: { items: [] }
-		};
-		server.member_links.set(new_link.id, new_link);
-		
-		return Promise.resolve(new_link);
-	}
-	
-	public update_member_link(server_id: string, link_id: number, payload: UpdateServerMemberLinkPayload): Promise<void> {
-		const server = this.internal_get(server_id);
-		const link = server.member_links.get(link_id);
-		if (!link)
+		const role = server.roles.get(role_id);
+		if (!role)
 			return Promise.reject(new Error("no such mock item"));
-		
-		if (payload.display_name != undefined)
-			link.display_name = payload.display_name;
-		if (payload.connectors)
-			link.connectors = payload.connectors;
-		if (payload.criteria)
-			link.criteria = payload.criteria;
-		
-		return Promise.resolve();
-	}
-	
-	public delete_member_link(server_id: string, link_id: number): Promise<void> {
-		const server = this.internal_get(server_id);
-		server.member_links.delete(link_id);
 		
 		return Promise.resolve();
 	}
@@ -64,7 +35,11 @@ export default class MockRibbonAgentServerApi implements RibbonAgentServerApi {
 			const new_server: InternalServer = {
 				id: server_id,
 				display_name: `${server_id} (Mock)`,
-				member_links: new Map()
+				roles: new Map([
+					['1111111111', { id: '1111111111', name: 'Admin', member_count: 0, requirements_mock: 'Inactive' }],
+					['1234567890', { id: '1234567890', name: 'Special Role', member_count: 5, requirements_mock: 'Group Role' }],
+					['1430000000', { id: '1430000000', name: 'Verified', member_count: 143, requirements_mock: 'Group Membership' }],
+				])
 			};
 			this.servers.set(server_id, new_server);
 			
@@ -78,5 +53,5 @@ export default class MockRibbonAgentServerApi implements RibbonAgentServerApi {
 export interface InternalServer {
 	id: string,
 	display_name: string,
-	member_links: Map<number, MemberLink>
+	roles: Map<string, ServerRole>
 }

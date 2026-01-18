@@ -1,28 +1,29 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { ServerRole } from '@ribbonette/agent/src/types/api/server/member_link';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
 	import { agent } from '$lib/client/agent';
 	import { create_toast } from '$lib/client/store/interface/toasts.svelte';
-	import type { Connector, Connectors, Criteria, CriteriaItem, MemberLink } from '$lib/client/types/api/server';
+	import type { Connector, Connectors, Criteria, CriteriaItem } from '$lib/client/types/api/server';
 
-	const member_link_id = $derived(parseInt(page.params.member_link_id!));
 	const server_id = $derived(page.params.server_id!);
+	const server_role_id = $derived(page.params.role_id!);
 
-	let member_link: MemberLink | null = $state(null);
+	let server_role: ServerRole | null = $state(null);
 	onMount(async () => {
-		const member_links = await agent.servers.get_member_links(server_id);
-		const current_member_link = member_links
-			.find(item => item.id == member_link_id);
+		const server_roles = await agent.servers.get_roles(server_id);
+		const current_member_link = server_roles
+			.find(item => item.id == server_role_id);
 		if (!current_member_link)
 			return goto(`/server/${server_id}`);
 
-		connectors = JSON.parse(JSON.stringify(current_member_link.connectors));
-		criteria = JSON.parse(JSON.stringify(current_member_link.criteria));
-		display_name = current_member_link.display_name;
-		member_link = current_member_link
+		//connectors = JSON.parse(JSON.stringify(current_member_link.connectors));
+		//criteria = JSON.parse(JSON.stringify(current_member_link.criteria));
+		display_name = current_member_link.name;
+		server_role = current_member_link
 	});
 
 	let connectors: Connectors = $state({ items: [] });
@@ -52,10 +53,8 @@
 	async function save_changes() {
 		is_saving = true;
 
-		await agent.servers.update_member_link(server_id, member_link_id, {
-			connectors,
-			criteria,
-			display_name
+		await agent.servers.update_role(server_id, server_role_id, {
+			
 		});
 
 		create_toast({
@@ -63,24 +62,21 @@
 			metadata: { display_name }
 		});
 
-		member_link = {
+		/*member_link = {
 			id: member_link_id,
 			display_name,
 
 			connectors,
 			criteria
-		};
+		};*/
 
 		is_saving = false;
 	}
 </script>
 
 <div class="geist">
-	{#if member_link}
-		<h1>{member_link.display_name}</h1>
-
-		<label for="display_name">display name</label>
-		<input id="display_name" type="text" bind:value={display_name}/>
+	{#if server_role}
+		<h1>{server_role.name}</h1>
 
 		<table>
 			<thead>
@@ -173,7 +169,7 @@
 			<button type="button" disabled={is_saving} onclick={save_changes}>
 				save changes
 			</button>
-			<a href={`/server/${server_id}/member_links`}>
+			<a href={`/server/${server_id}/roles`}>
 				cancel
 			</a>
 		</div>

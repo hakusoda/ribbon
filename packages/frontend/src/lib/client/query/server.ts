@@ -8,9 +8,9 @@ export function create_server_query(server_id: string) {
 	}));
 }
 
-export function create_server_member_links_query(server_id: string) {
+export function create_server_roles_query(server_id: string) {
 	return createQuery(() => ({
-		queryKey: ['server', server_id, 'member_links'],
-		queryFn: () => agent.servers.get_member_links(server_id)
+		queryKey: ['server', server_id, 'roles'],
+		queryFn: () => agent.servers.get_roles(server_id)
 	}));
 }

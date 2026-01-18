@@ -3,7 +3,7 @@ import type { RibbonAgentServerApi } from '../../types/agent/apis/server';
 import type { GetServerResponse } from '../../types/api/server';
 import type {
 	CreateServerMemberLinkResponse,
-	GetServerMemberLinksResponse,
+	GetServerRolesResponse,
 	UpdateServerMemberLinkPayload
 } from '../../types/api/server/member_link';
 
@@ -14,8 +14,8 @@ export default class UserRibbonAgentServerApi implements RibbonAgentServerApi {
 		return this.agent.fetch_json(`/v1/server/${server_id}`);
 	}
 	
-	public get_member_links(server_id: string): Promise<GetServerMemberLinksResponse> {
-		return this.agent.fetch_json(`/v1/server/${server_id}/member_links`);
+	public get_roles(server_id: string): Promise<GetServerRolesResponse> {
+		return this.agent.fetch_json(`/v1/server/${server_id}/roles`);
 	}
 	
 	public create_member_link(server_id: string, display_name: string): Promise<CreateServerMemberLinkResponse> {

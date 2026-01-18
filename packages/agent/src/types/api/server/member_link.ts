@@ -1,10 +1,14 @@
-export type CreateServerMemberLinkResponse = MemberLink
-export type GetServerMemberLinksResponse = MemberLink[]
-export interface UpdateServerMemberLinkPayload {
-	display_name?: string,
+export type GetServerRolesResponse = ServerRole[]
+export interface UpdateServerRolePayload {
+	
+}
 
-	connectors?: MemberLinkConnectors,
-	criteria?: MemberLinkCriteria
+export interface ServerRole {
+	id: string,
+	name: string,
+	
+	member_count: number,
+	requirements_mock: string
 }
 
 export interface MemberLink {
